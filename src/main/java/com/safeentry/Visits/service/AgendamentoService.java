@@ -48,7 +48,7 @@ public class AgendamentoService {
         agendamento.setDataHoraVisita(request.getDataHoraVisita());
         agendamento.setVisitanteJson(request.getVisitante());
         agendamento.setQrToken(generateQrToken()); // Gera um QR Token único
-        agendamento.setStatus(AgendamentoStatus.PENDENTE); // Define o status inicial
+        agendamento.setStatus(AgendamentoStatus.pendente); // Define o status inicial
 
         Agendamento savedAgendamento = agendamentoRepository.save(agendamento);
 
@@ -87,7 +87,7 @@ public class AgendamentoService {
         // Adicione lógica de validação aqui se necessário (ex: não pode mudar de USADO para PENDENTE)
         agendamento.setStatus(newStatus);
         // Se o status for USADO, marque como usado = true
-        if (newStatus == AgendamentoStatus.USADO) {
+        if (newStatus == AgendamentoStatus.usado) {
             agendamento.setUsado(true);
         }
 
@@ -100,12 +100,12 @@ public class AgendamentoService {
         Agendamento agendamento = agendamentoRepository.findByQrToken(qrToken)
                 .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado para o token: " + qrToken));
 
-        if (agendamento.getUsado() || agendamento.getStatus() != AgendamentoStatus.PENDENTE) {
+        if (agendamento.getUsado() || agendamento.getStatus() != AgendamentoStatus.pendente) {
             throw new IllegalStateException("Agendamento já foi usado ou está em status inválido.");
         }
 
         agendamento.setUsado(true);
-        agendamento.setStatus(AgendamentoStatus.USADO);
+        agendamento.setStatus(AgendamentoStatus.usado);
         return agendamentoRepository.save(agendamento);
     }
 }

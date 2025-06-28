@@ -35,7 +35,7 @@ public class Agendamento {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private AgendamentoStatus status = AgendamentoStatus.PENDENTE;
+    private AgendamentoStatus status = AgendamentoStatus.pendente;
 
     @Column(name = "criado_em", updatable = false)
     private LocalDateTime criadoEm = LocalDateTime.now();
