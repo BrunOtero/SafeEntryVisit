@@ -108,4 +108,23 @@ public class AgendamentoService {
         agendamento.setStatus(AgendamentoStatus.usado);
         return agendamentoRepository.save(agendamento);
     }
+
+    @Transactional
+    public Agendamento cancelAgendamento(UUID agendamentoId, UUID moradorId) {
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado com o ID: " + agendamentoId));
+
+        // Verifica se o agendamento pertence ao morador autenticado
+        if (!agendamento.getMoradorId().equals(moradorId)) {
+            throw new IllegalStateException("Você não tem permissão para cancelar este agendamento.");
+        }
+
+        // Verifica se o agendamento pode ser cancelado
+        if (agendamento.getStatus() != AgendamentoStatus.pendente) {
+            throw new IllegalStateException("Não é possível cancelar um agendamento que não esteja pendente. Status atual: " + agendamento.getStatus());
+        }
+
+        agendamento.setStatus(AgendamentoStatus.cancelado);
+        return agendamentoRepository.save(agendamento);
+    }
 }

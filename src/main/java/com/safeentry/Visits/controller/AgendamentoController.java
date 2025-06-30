@@ -122,6 +122,34 @@ public class AgendamentoController {
         }
     }
 
+    @PatchMapping("/me/{id}/cancel")
+    public ResponseEntity<AgendamentoResponse> cancelMyAgendamento(@PathVariable UUID id,
+                                                                  Authentication authentication,
+                                                                  HttpServletRequest httpRequest) {
+        try {
+            UUID moradorId = null;
+            if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+                String authorizationHeader = httpRequest.getHeader("Authorization");
+                if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                    String jwt = authorizationHeader.substring(7);
+                    moradorId = jwtUtil.extractUserId(jwt);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token JWT não fornecido ou formato inválido.");
+                }
+            } else {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado ou ID do morador não disponível.");
+            }
+
+            Agendamento cancelledAgendamento = agendamentoService.cancelAgendamento(id, moradorId);
+            return ResponseEntity.ok(convertToDto(cancelledAgendamento));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao cancelar agendamento: " + e.getMessage());
+        }
+    }
+
     private AgendamentoResponse convertToDto(Agendamento agendamento) {
         return new AgendamentoResponse(
                 agendamento.getId(),
