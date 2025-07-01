@@ -13,7 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.servlet.http.HttpServletRequest; // Importar HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,12 +34,12 @@ public class AgendamentoController {
     @PostMapping
     public ResponseEntity<AgendamentoResponse> createAgendamento(@Valid @RequestBody AgendamentoRequest request,
                                                                  Authentication authentication,
-                                                                 HttpServletRequest httpRequest) { // Injetar HttpServletRequest
+                                                                 HttpServletRequest httpRequest) {
         try {
             System.out.println("\n\nAQUIIIIIIII\n\n");
             UUID moradorId = null;
             if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-                String authorizationHeader = httpRequest.getHeader("Authorization"); // Obter o cabeçalho Authorization
+                String authorizationHeader = httpRequest.getHeader("Authorization");
                 if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                     String jwt = authorizationHeader.substring(7); // Extrair o token JWT (remover "Bearer ")
                     moradorId = jwtUtil.extractUserId(jwt); // Extrair o userId do token
@@ -69,7 +69,7 @@ public class AgendamentoController {
 
     @GetMapping("/me")
     public ResponseEntity<List<AgendamentoResponse>> getMyAgendamentos(Authentication authentication,
-                                                                       HttpServletRequest httpRequest) { // Injetar HttpServletRequest
+                                                                       HttpServletRequest httpRequest) {
         if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado.");
         }

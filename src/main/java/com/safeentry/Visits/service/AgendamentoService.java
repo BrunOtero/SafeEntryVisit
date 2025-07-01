@@ -15,7 +15,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 import org.springframework.kafka.core.KafkaTemplate;
-import com.safeentry.Visits.dto.AgendamentoResponse; // Import AgendamentoResponse DTO
+import com.safeentry.Visits.dto.AgendamentoResponse;
 
 @Service
 public class AgendamentoService {
@@ -47,8 +47,6 @@ public class AgendamentoService {
 
         Agendamento savedAgendamento = agendamentoRepository.save(agendamento);
 
-        // Convert Agendamento to AgendamentoResponse DTO before sending to Kafka
-        // The Gate service expects VisitServiceAgendamentoResponse, which should match this DTO's structure.
         AgendamentoResponse agendamentoResponseForKafka = new AgendamentoResponse(
                 savedAgendamento.getId(),
                 savedAgendamento.getMoradorId(),

@@ -12,17 +12,17 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.safeentry.Visits.util.JwtUtil; // Certifique-se de que este caminho está correto
+import com.safeentry.Visits.util.JwtUtil;
 
 import java.io.IOException;
-import java.util.UUID; // Importar UUID
+import java.util.UUID;
 
 // Filtro JWT para interceptar requisições e validar o token no serviço Visits
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService; // Será usado para carregar UserDetails
+    private final UserDetailsService userDetailsService;
 
     public JwtRequestFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
@@ -48,15 +48,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 // Logar o erro (e.g., token inválido, expirado, etc.)
                 System.err.println("Erro ao extrair informações do JWT: " + e.getMessage());
-                // Não lançar exceção aqui, deixe o fluxo continuar para o Spring Security lidar com 401/403
             }
         }
 
         // Se o email e o userId foram extraídos e não há autenticação no contexto de segurança atual
         if (username != null && userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // Carrega os detalhes do usuário usando o UserDetailsService
-            // Este UserDetailsService no Visits service será simplificado,
-            // apenas criando um UserDetails com base no username e autoridades do token.
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             // Valida o token
@@ -66,12 +62,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 
                 // Anexe o JWT completo nos detalhes da autenticação.
-                // Isso permite que o controlador o recupere, como você tentou fazer.
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
-                // Podemos adicionar o userId diretamente nos detalhes se quiser, mas a extração do cabeçalho já funciona.
-                // ((WebAuthenticationDetails)usernamePasswordAuthenticationToken.getDetails()).setCustomAttribute("userId", userId); 
-                
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         }

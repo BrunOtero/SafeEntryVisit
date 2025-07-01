@@ -25,7 +25,7 @@ public class Agendamento {
     // Mapeamento para o tipo JSONB do PostgreSQL
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "visitante_json", columnDefinition = "jsonb", nullable = false)
-    private VisitanteInfo visitanteJson; // Usar a classe VisitanteInfo para mapear o JSONB
+    private VisitanteInfo visitanteJson;
 
     @Column(name = "qr_token", nullable = false, unique = true)
     private String qrToken; // Token para o QR Code
@@ -40,10 +40,8 @@ public class Agendamento {
     @Column(name = "criado_em", updatable = false)
     private LocalDateTime criadoEm = LocalDateTime.now();
 
-    // Construtor padrão
     public Agendamento() {}
 
-    // Getters e Setters
     public UUID getId() {
         return id;
     }

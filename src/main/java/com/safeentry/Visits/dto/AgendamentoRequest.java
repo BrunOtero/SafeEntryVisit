@@ -11,20 +11,15 @@ import java.time.LocalDateTime;
 // DTO para a requisição de criação de agendamento
 public class AgendamentoRequest {
 
-    // O moradorId virá do token JWT do usuário autenticado, então não é necessário no payload da requisição,
-    // mas pode ser útil para validações futuras ou se a API permitir um admin agendar para outro morador.
-    // Por enquanto, não vamos incluir aqui, pois será extraído do token JWT.
-
     @NotNull(message = "A data e hora da visita são obrigatórias")
     @FutureOrPresent(message = "A data e hora da visita não pode ser no passado")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS") // AGORA COM MILISSEGUNDOS
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime dataHoraVisita;
 
     @NotNull(message = "As informações do visitante são obrigatórias")
-    @Valid // Valida também os campos dentro de VisitanteInfo
+    @Valid
     private VisitanteInfo visitante; // Mapeia para o JSONB
 
-    // Getters e Setters
     public LocalDateTime getDataHoraVisita() {
         return dataHoraVisita;
     }

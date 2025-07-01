@@ -20,7 +20,6 @@ public class AgendamentoResponse {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime criadoEm;
 
-    // Construtor para mapear de Agendamento para AgendamentoResponse
     public AgendamentoResponse(UUID id, UUID moradorId, LocalDateTime dataHoraVisita, VisitanteInfo visitante,
                                String qrToken, Boolean usado, AgendamentoStatus status, LocalDateTime criadoEm) {
         this.id = id;
@@ -33,7 +32,6 @@ public class AgendamentoResponse {
         this.criadoEm = criadoEm;
     }
 
-    // Getters
     public UUID getId() {
         return id;
     }

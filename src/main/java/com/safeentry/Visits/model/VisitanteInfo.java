@@ -2,7 +2,7 @@ package com.safeentry.Visits.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-// Esta classe representa a estrutura JSON que você armazena no campo 'visitante_json'
+// Esta classe representa a estrutura JSON armazenada no campo 'visitante_json'
 public class VisitanteInfo {
     @JsonProperty("nome")
     private String nome;
