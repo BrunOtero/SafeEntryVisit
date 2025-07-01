@@ -36,6 +36,7 @@ public class AgendamentoController {
                                                                  Authentication authentication,
                                                                  HttpServletRequest httpRequest) { // Injetar HttpServletRequest
         try {
+            System.out.println("\n\nAQUIIIIIIII\n\n");
             UUID moradorId = null;
             if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
                 String authorizationHeader = httpRequest.getHeader("Authorization"); // Obter o cabeçalho Authorization

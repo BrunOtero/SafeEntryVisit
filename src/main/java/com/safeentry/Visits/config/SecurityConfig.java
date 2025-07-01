@@ -58,6 +58,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs REST sem sessão
             .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/agendamentos/**").authenticated() // Endpoints de agendamento exigem autenticação
                 .anyRequest().permitAll() // Todas as outras requisições (se houver) são permitidas sem autenticação
             )

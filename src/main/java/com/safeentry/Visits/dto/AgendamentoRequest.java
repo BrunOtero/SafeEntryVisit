@@ -17,7 +17,7 @@ public class AgendamentoRequest {
 
     @NotNull(message = "A data e hora da visita são obrigatórias")
     @FutureOrPresent(message = "A data e hora da visita não pode ser no passado")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") // Formato esperado da data/hora
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS") // AGORA COM MILISSEGUNDOS
     private LocalDateTime dataHoraVisita;
 
     @NotNull(message = "As informações do visitante são obrigatórias")
