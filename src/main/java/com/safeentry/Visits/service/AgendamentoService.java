@@ -14,55 +14,58 @@ import java.util.UUID;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-// (Opcional) Se for usar Kafka para notificação
-// import org.springframework.kafka.core.KafkaTemplate;
-// import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.kafka.core.KafkaTemplate;
+import com.safeentry.Visits.dto.AgendamentoResponse; // Import AgendamentoResponse DTO
 
 @Service
 public class AgendamentoService {
 
     private final AgendamentoRepository agendamentoRepository;
-    // private final KafkaTemplate<String, String> kafkaTemplate; // Descomente se for usar Kafka
-    // private final ObjectMapper objectMapper; // Descomente se for usar Kafka e precisar serializar JSON
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public AgendamentoService(AgendamentoRepository agendamentoRepository
-                              /*, KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper*/) { // Descomente
+    public AgendamentoService(AgendamentoRepository agendamentoRepository,
+                              KafkaTemplate<String, Object> kafkaTemplate) {
         this.agendamentoRepository = agendamentoRepository;
-        // this.kafkaTemplate = kafkaTemplate; // Descomente
-        // this.objectMapper = objectMapper; // Descomente
+        this.kafkaTemplate = kafkaTemplate;
     }
 
-    // Método para gerar um QR Token único e seguro
     private String generateQrToken() {
         SecureRandom secureRandom = new SecureRandom();
-        byte[] tokenBytes = new byte[16]; // 16 bytes = 128 bits, bom para um token único
+        byte[] tokenBytes = new byte[16];
         secureRandom.nextBytes(tokenBytes);
-        // Codifica para Base64 URL-safe para evitar caracteres problemáticos em URLs ou QR Codes
         return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
     }
 
     @Transactional
     public Agendamento createAgendamento(AgendamentoRequest request, UUID moradorId) {
         Agendamento agendamento = new Agendamento();
-        agendamento.setMoradorId(moradorId); // Define o ID do morador extraído do token
+        agendamento.setMoradorId(moradorId);
         agendamento.setDataHoraVisita(request.getDataHoraVisita());
         agendamento.setVisitanteJson(request.getVisitante());
-        agendamento.setQrToken(generateQrToken()); // Gera um QR Token único
-        agendamento.setStatus(AgendamentoStatus.pendente); // Define o status inicial
+        agendamento.setQrToken(generateQrToken());
+        agendamento.setStatus(AgendamentoStatus.pendente);
 
         Agendamento savedAgendamento = agendamentoRepository.save(agendamento);
 
-        // (Opcional) Publicar evento para o serviço de Portaria via Kafka
-        /*
+        // Convert Agendamento to AgendamentoResponse DTO before sending to Kafka
+        // The Gate service expects VisitServiceAgendamentoResponse, which should match this DTO's structure.
+        AgendamentoResponse agendamentoResponseForKafka = new AgendamentoResponse(
+                savedAgendamento.getId(),
+                savedAgendamento.getMoradorId(),
+                savedAgendamento.getDataHoraVisita(),
+                savedAgendamento.getVisitanteJson(),
+                savedAgendamento.getQrToken(),
+                savedAgendamento.getUsado(),
+                savedAgendamento.getStatus(),
+                savedAgendamento.getCriadoEm()
+        );
+
         try {
-            String agendamentoJson = objectMapper.writeValueAsString(savedAgendamento);
-            kafkaTemplate.send("agendamentos-criados", savedAgendamento.getId().toString(), agendamentoJson);
-            System.out.println("Evento de agendamento criado enviado para Kafka: " + savedAgendamento.getId());
+            kafkaTemplate.send("agendamentos-criados", savedAgendamento.getId().toString(), agendamentoResponseForKafka);
+            System.out.println("Evento de agendamento criado enviado para Kafka: " + savedAgendamento.getId()); //
         } catch (Exception e) {
             System.err.println("Erro ao enviar evento para Kafka: " + e.getMessage());
-            // Lidar com o erro de forma apropriada (log, retry, etc.)
         }
-        */
 
         return savedAgendamento;
     }
@@ -84,9 +87,7 @@ public class AgendamentoService {
         Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
                 .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado com o ID: " + agendamentoId));
 
-        // Adicione lógica de validação aqui se necessário (ex: não pode mudar de USADO para PENDENTE)
         agendamento.setStatus(newStatus);
-        // Se o status for USADO, marque como usado = true
         if (newStatus == AgendamentoStatus.usado) {
             agendamento.setUsado(true);
         }
@@ -94,7 +95,6 @@ public class AgendamentoService {
         return agendamentoRepository.save(agendamento);
     }
 
-    // Método para marcar um agendamento como usado (inválido após o uso)
     @Transactional
     public Agendamento markAgendamentoAsUsed(String qrToken) {
         Agendamento agendamento = agendamentoRepository.findByQrToken(qrToken)
@@ -114,12 +114,10 @@ public class AgendamentoService {
         Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
                 .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado com o ID: " + agendamentoId));
 
-        // Verifica se o agendamento pertence ao morador autenticado
         if (!agendamento.getMoradorId().equals(moradorId)) {
             throw new IllegalStateException("Você não tem permissão para cancelar este agendamento.");
         }
 
-        // Verifica se o agendamento pode ser cancelado
         if (agendamento.getStatus() != AgendamentoStatus.pendente) {
             throw new IllegalStateException("Não é possível cancelar um agendamento que não esteja pendente. Status atual: " + agendamento.getStatus());
         }
